@@ -43,6 +43,12 @@
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/stl_util.h>
 
+namespace tensorflow {
+__attribute__((weak)) std::string CurrentStackTrace() {
+  return "No stack trace";
+}
+}
+
 namespace google {
 namespace protobuf {
 
@@ -54,6 +60,11 @@ template <typename Value>
 bool SimpleDescriptorDatabase::DescriptorIndex<Value>::AddFile(
     const FileDescriptorProto& file,
     Value value) {
+  if (file.name() == "tensorflow/stream_executor/dnn.proto") {
+    GOOGLE_LOG(ERROR) << __builtin_return_address(0);
+    GOOGLE_LOG(ERROR) << tensorflow::CurrentStackTrace();
+  }
+
   if (!InsertIfNotPresent(&by_name_, file.name(), value)) {
     GOOGLE_LOG(ERROR) << "File already exists in database: " << file.name();
     return false;
